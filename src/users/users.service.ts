@@ -83,6 +83,12 @@ export class UsersService {
     delete filter.page;
     const totalItems = await this.userModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / limit1);
+
+    // Query theo title
+    if(filter.name) {
+      const formatTitle = {$regex: filter.name, $options: 'i'};
+      filter.name = formatTitle;
+    }
     
     let result = await this.userModel.find(filter).limit(limit1).skip(offset)
       // @ts-ignore:Unreachable code error
@@ -102,7 +108,7 @@ export class UsersService {
   async findOne(id:string) {
     try {
       if(!mongoose.Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid id');
-      const user = await this.userModel.findById(id).populate({path:'role', select:'name'});
+      const user = await this.userModel.findById(id).populate({path:'role', select:'name'}).select(['-password', '-refreshToken']);
       if(!user || user.isDeleted == true) throw new BadRequestException('User not found')
       return user;
     } catch (error) {

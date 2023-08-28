@@ -13,6 +13,7 @@ export class UsersController {
   @Roles(['admin'])
   @ResponseMessage('Create a user')
   create(@Body() createUserDto: CreateUserDto, @User() user : IUser) {
+    console.log(createUserDto);
     return this.usersService.create(createUserDto, user);
   }
 

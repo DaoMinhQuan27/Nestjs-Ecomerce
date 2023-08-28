@@ -12,6 +12,9 @@ import { RolesModule } from './roles/roles.module';
 import { RolesGuard } from './auth/roles.guard';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ProductsModule } from './products/products.module';
+import { ProductCategorysModule } from './product-categorys/product-categorys.module';
+import { BlogCategorysModule } from './blog-categorys/blog-categorys.module';
+import { BlogsModule } from './blogs/blogs.module';
 
 @Module({
   imports: [
@@ -45,7 +48,10 @@ import { ProductsModule } from './products/products.module';
     UsersModule,
     AuthModule,
     RolesModule,
-    ProductsModule
+    ProductsModule,
+    ProductCategorysModule,
+    BlogCategorysModule,
+    BlogsModule
   ],
   controllers: [AppController],
   providers: [AppService , 

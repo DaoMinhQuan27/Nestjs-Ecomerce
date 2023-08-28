@@ -7,6 +7,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import slugify from 'slugify';
 import aqp from 'api-query-params';
+import { IRating } from './ratings.interface';
+import e from 'express';
+import mongoose, { ObjectId } from 'mongoose';
 
 @Injectable()
 export class ProductsService {
@@ -14,7 +17,6 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto, user :IUser) {
     try {
-      console.log(createProductDto);
       const slug = slugify(createProductDto.title)
       createProductDto.slug = slug;
       
@@ -34,10 +36,19 @@ export class ProductsService {
     delete filter.page;
     const totalItems = await this.productModel.countDocuments(filter);
     const totalPages = Math.ceil(totalItems / limit1);
+
+    // Query theo title
+    if(filter.name) {
+      const formatTitle = {$regex: filter.name, $options: 'i'};
+      filter.name = formatTitle;
+    }
     
     let result = await this.productModel.find(filter).limit(limit1).skip(offset)
       // @ts-ignore:Unreachable code error
-      .sort(sort).select(projection).populate(population)
+      .sort(sort).select(projection).populate(population).populate(
+        [{path: 'ratings.postedBy', select: 'name email'}, 
+        {path: 'category', select: 'name'}
+      ])
       ;
       return {
         meta : {
@@ -52,7 +63,7 @@ export class ProductsService {
 
   async findOne(id: string) {
     try {
-      const product = await this.productModel.findById(id);
+      const product = await this.productModel.findById(id).populate({path: 'category', select: 'name'});
       if(!product || product.isDeleted == true) throw new BadRequestException('Product not found')
       return product;
     } catch (error) {
@@ -79,6 +90,51 @@ export class ProductsService {
       if(!product) throw new BadRequestException('Product not found');
       const response = await this.productModel.updateOne({_id: id}, {deletedBy: {email:user.email, _id: user._id}});
       return this.productModel.softDelete({_id: id});
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async createRating(body : IRating, user :IUser) {
+    try {
+      const {id, star, comment} = body;
+      const rating = {
+        postedBy: user._id as unknown as ObjectId,
+        star,
+        comment
+      }
+      // validate
+      if(!id || !star || !comment) throw new BadRequestException('Missing field');
+      const product = await this.productModel.findById(id);
+      if(!product) throw new BadRequestException('Invalid id or product not found');
+
+      
+      // check user đã rating chưa
+      const oldRating = product.ratings;
+      const checkRating = oldRating.findIndex(item => item.postedBy.toString() === user._id);
+      if(checkRating == -1) {
+        // Nếu chưa thì tạo cái rating đó
+        const response = await this.productModel.updateOne({_id: id},{
+          ratings: [rating,...oldRating]
+        });
+      
+      }else {
+        // Nếu rating rồi thì update cái rating đó
+        oldRating[checkRating] = rating;
+        const response = await this.productModel.updateOne({_id: id},{
+          ratings: oldRating
+        })
+      }
+
+      // update totalRatings
+      const totalRatings = product.ratings.length;
+      const totalStars = product.ratings.reduce((acc, item) => acc + +item.star, 0);
+      const newTotalRatings = (totalStars / totalRatings).toFixed(1);
+      const response = await this.productModel.updateOne({_id: id},{
+        totalRatings: newTotalRatings
+      })
+      
+      return checkRating == -1 ? 'Crate rating success' : 'Update rating success';
     } catch (error) {
       throw new BadRequestException(error.message);
     }

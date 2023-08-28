@@ -4,8 +4,6 @@ import { User } from 'src/users/schemas/user.schema';
 
 export type ProductDocument = HydratedDocument<Product>;
 
-
-
 @Schema({timestamps: true})
 export class Product {
 	@Prop({required: true})
@@ -21,7 +19,7 @@ export class Product {
   @Prop()
   brand: string;
 
-  @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Category'})
+  @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory'})
   category: mongoose.Schema.Types.ObjectId;
 
   @Prop()

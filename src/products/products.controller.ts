@@ -4,6 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IUser } from 'src/auth/user.interface';
 import { Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
+import { IRating } from './ratings.interface';
 
 @Controller('products')
 export class ProductsController {
@@ -13,6 +14,12 @@ export class ProductsController {
   @ResponseMessage('Create a product')
   create(@Body() createProductDto: CreateProductDto, @User() user : IUser) {
     return this.productsService.create(createProductDto , user);
+  }
+
+  @Post('ratings')
+  @ResponseMessage('Ratings a product')
+  createRating(@Body() body : IRating, @User() user : IUser) {
+    return this.productsService.createRating(body, user);
   }
 
   @Public()
