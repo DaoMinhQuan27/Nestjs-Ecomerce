@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsEmail, IsMongoId, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested, isNotEmpty } from 'class-validator';
+import { ArrayMinSize, IsArray, IsEmail, IsMongoId, IsNotEmpty, IsNotEmptyObject, IsObject, IsOptional, IsString, ValidateNested, isNotEmpty } from 'class-validator';
 import mongoose, { SchemaTypes } from 'mongoose';
 import { User } from 'src/users/schemas/user.schema';
 
@@ -35,19 +35,24 @@ export class CreateProductDto {
     quantity: number;
     
     @ApiProperty({required:false})
+    @IsOptional()
     sold: number;
 
     @ApiProperty({required:false})
+    @IsOptional()
     colors: string;
 
     @ApiProperty({required:false})
+    @IsOptional()
     images: string[];
 
     @ApiProperty({required:false})
+    @IsOptional()
     ratings: {star:number, postedBy:mongoose.Schema.Types.ObjectId, comment:string}[];
 
 
     @ApiProperty({required:false})
+    @IsOptional()
     totalRatings: number;
 }
 

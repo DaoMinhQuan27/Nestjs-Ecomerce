@@ -1,14 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFiles, BadRequestException, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IUser } from 'src/auth/user.interface';
 import { Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
 import { IRating } from './ratings.interface';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { UploadsService } from 'src/uploads/uploads.service';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService,
+    private readonly uploadsService: UploadsService,
+    ) {}
 
   @Post()
   @ResponseMessage('Create a product')
@@ -46,5 +51,60 @@ export class ProductsController {
   @ResponseMessage('Delete a product')
   remove(@Param('id') id: string , @User() user : IUser) {
     return this.productsService.remove(id, user);
+  }
+
+  @Post('upload/:id')
+  @Throttle(3, 60)
+  @UseInterceptors(FilesInterceptor('images'))
+  @ResponseMessage('Upload images')
+  async uploadFile(@UploadedFiles(
+    new ParseFilePipe({
+      validators: [
+        // Max:5MB
+        new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5  }),
+        new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
+      ],
+    }),
+  ) files: Array<Express.Multer.File>, @Param('id') id: string, @User() user: IUser) {
+    if(!files){
+      throw new BadRequestException('Require image files');
+    }
+    const product = await this.productsService.findOne(id);
+    let data = [];
+    for(let i = 0; i < files.length; i++){
+      const upload = await this.uploadsService.uploadSingleFile(files[i].buffer, files[i].originalname, 'products', id);
+      data.push(upload.fileUrl);
+    }
+    if(data.length != 0){
+      await this.productsService.update(id, {images: [...product.images, ...data]}, user);
+      return {
+        images: data,
+      }
+    }
+    
+  }
+
+
+  @Delete('upload/:id')
+  @Throttle(3, 60)
+  @ResponseMessage('Delete images')
+  async deleteFile(@Param('id') id: string, @User() user: IUser, @Body() body: any) {
+    const product = await this.productsService.findOne(id);
+    if(!product) throw new BadRequestException('Product not found');
+    if(!body.images) throw new BadRequestException('Require Array of images ');
+
+    // Delete image in AWS
+    const upload = await this.uploadsService.deleteMultipleFile(body.images);
+
+    // Delete image in DB and update
+    const images = this.removeAfromB(body.images,product.images)
+
+    await this.productsService.update(id, {images}, user);
+    return "Delete images successfully"
+    
+  }
+
+  removeAfromB(a:string[], b:string[]) {
+    return b.filter(item => !a.includes(item));
   }
 }

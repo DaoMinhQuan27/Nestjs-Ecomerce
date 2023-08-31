@@ -75,8 +75,10 @@ export class ProductsService {
     try {
       const product = await this.productModel.findById(id);
       if(!product) throw new BadRequestException('Product not found');
-      const slug = slugify(updateProductDto.title)
-      updateProductDto.slug = slug;
+      if(updateProductDto.title) {
+        const slug = slugify(updateProductDto.title)
+        updateProductDto.slug = slug;
+      }
       const response = await this.productModel.updateOne({_id: id}, {...updateProductDto, updatedBy: {email:user.email, _id: user._id}});
       return response;
     } catch (error) {

@@ -170,6 +170,8 @@ export class AuthService {
     }
   }
 
+
+
   async resetPass(password: string, tokenPass: string) {
     try {
       if(!password) throw new BadRequestException('Password is required')
@@ -190,6 +192,55 @@ export class AuthService {
     } catch (error) {
       throw new BadRequestException(error.message);  
     }
+  }
+
+  async verify(id: string) {
+    try {
+      const user = await this.usersService.findOne(id);
+
+      const verifyEmail = await this.createChangePasswordToken({email: user.email, _id: user._id});
+
+      // Send mail
+      const html = `<div><h3>PLEASE click this link to verify your account, this link will expire after 5 minitues</h3>
+      <a href ="${this.configService.get<string>('APP_URL')}/api/v1/auth/finalVerify/${verifyEmail}">
+        <button style="color:#fff; padding:10px ; margin-top:10px; background-color:#166fe5; font-size:18px; border:none; border-radius:8px; ">Verify Email </button>
+      </a>
+      
+      </div>`
+      await this.mailerService
+      .sendMail({
+        to: user.email, // list of receivers
+        from: 'admin of website', // sender address
+        subject: 'EMAIL IS SENDED TO VERIFY ACCOUNT ✔', // Subject line
+        text: 'Verify account', // plaintext body
+        html: html
+      })
+
+      return {
+        message: 'Link to render verify success page',
+        link: `${this.configService.get<string>('APP_URL')}/api/v1/auth/finalVerify/${verifyEmail}`
+      }
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async finalVerify(tokenVerify: string) {
+    const token = await this.jwtService.verifyAsync(tokenVerify, {
+      secret : this.configService.get<string>('CHANGEPASS_TOKEN_SECRET'),
+    })
+    .catch((error) => {
+      throw new BadRequestException("LINK EXPIRED, TRY AGAIN");
+    })
+    
+    if(!token) {
+      throw new BadRequestException('Invalid token');
+    }
+
+    await this.usersService.updateUser(token._id, {isActive: true});
+      return {
+        message: 'Verify account success',
+      }
   }
 
   async passportLogin(user: any, res: Response) {
@@ -228,6 +279,16 @@ export class AuthService {
       }
       
 
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async checkActive(_id: string) {
+    try {
+      const user = await this.usersService.findOne(_id);
+      if(!user.isActive) throw new BadRequestException('Your account is not active, please verify your email');
+      return true;
     } catch (error) {
       throw new BadRequestException(error.message);
     }

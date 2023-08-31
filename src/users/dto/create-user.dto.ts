@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEmail, IsMongoId, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested } from 'class-validator';
+import { IsEmail, IsMongoId, IsNotEmpty, IsNotEmptyObject, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class CreateUserDto {
@@ -8,6 +8,8 @@ export class CreateUserDto {
     @IsNotEmpty()
     @ApiProperty()
     email: string;
+
+    
 
     @IsNotEmpty()
     @ApiProperty()
@@ -18,41 +20,40 @@ export class CreateUserDto {
     name: string;
 
     @ApiProperty()
-    address: mongoose.Schema.Types.ObjectId;
+    @IsOptional()
+    address: string;
 
     @ApiProperty()
+    @IsOptional()
     wishlist: mongoose.Schema.Types.ObjectId;
 
     @ApiProperty({required:false})
+    @IsOptional()
     phone: string;
 
     @ApiProperty({required:false})
+    @IsOptional()
     image: string;
 
     @ApiProperty({required:false})
-    isBlocked: boolean;
+    @IsOptional()
+    isActive: boolean;
 
     @ApiProperty({required:false})
+    @IsOptional()
     gender: string;
 
     @ApiProperty({required:false})
+    @IsOptional()
     typeLogin: string;
 
     @ApiProperty({required:false})
-    refreshToken: string;
-
-    @ApiProperty({required:false})
+    @IsOptional()
     age: number;
 
     @ApiProperty({required:false})
-    cart: string[];
-
-    @ApiProperty({required:false})
-    passwordChangeAt: string;
-
-    @ApiProperty({required:false})
-    passwordResetToken: string;
-    
+    @IsOptional()
+    wishList: mongoose.Schema.Types.ObjectId[];
 
     @IsNotEmpty()
     @IsMongoId()
@@ -75,12 +76,16 @@ export class RegisterUserDto {
     name: string;
 
     @ApiProperty({required:false})
+    @IsOptional()
     address: string;
     @ApiProperty({required:false})
+    @IsOptional()
     phone: string;
     @ApiProperty({required:false})
+    @IsOptional()
     gender: string;
     @ApiProperty({required:false})
+    @IsOptional()
     age: number;
 
 }

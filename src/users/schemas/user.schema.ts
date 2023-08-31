@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { Product } from 'src/products/schemas/product.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -11,14 +12,14 @@ export class User {
 	@Prop()
   password: string;
 
-  @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Address'})
-  address: mongoose.Schema.Types.ObjectId;
+  @Prop()
+  address: string;
 
-  @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Product'})
-  wishlist: mongoose.Schema.Types.ObjectId;
+  @Prop({type: [mongoose.Schema.Types.ObjectId], ref: 'Product'})
+  wishList: Product[];
 
-  @Prop({default: false})
-  isBlocked: boolean;
+  @Prop({default: true})
+  isActive: boolean;
 
   @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Role'})
   role: mongoose.Schema.Types.ObjectId;
@@ -44,8 +45,12 @@ export class User {
   @Prop()
   age: number;
 
-  @Prop()
-  cart: string[];
+  @Prop({type:[{product:{type:mongoose.Schema.Types.ObjectId , ref : "Product"}, quantity:{type:Number}, color:{type:String}}], default: []})
+  cart: {
+    product: mongoose.Schema.Types.ObjectId,
+    quantity: number,
+    color: string
+  }[]
 
   @Prop()
   passwordChangeAt: string;

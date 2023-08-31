@@ -42,6 +42,20 @@ export class AuthController {
   }
 
   @Public()
+  @Post('verify/:id')
+  @ResponseMessage('Send Mail to verify account')
+  async verify(@Param('id') id: string) {
+    return this.authService.verify(id);
+  }
+
+  @Public()
+  @Get('finalVerify/:token')
+  @ResponseMessage('Send Mail to verify account')
+  async finalVerify(@Param('token') token: string) {
+    return this.authService.finalVerify(token);
+  }
+
+  @Public()
   @Post('forget-password')
   @ResponseMessage('Send mail to reset password')
   async forget(@Body() body: any) {

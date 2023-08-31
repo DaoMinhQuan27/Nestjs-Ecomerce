@@ -8,11 +8,18 @@ import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
 import aqp from 'api-query-params';
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
+import { S3 } from "aws-sdk";
+import { ConfigService } from '@nestjs/config';
+import { kMaxLength } from 'buffer';
+import { UploadsService } from 'src/uploads/uploads.service';
 
 
 @Injectable()
 export class BlogsService {
-  constructor(@InjectModel(Blog.name) private blogModel: SoftDeleteModel<BlogDocument>,) {}
+  constructor(@InjectModel(Blog.name) private blogModel: SoftDeleteModel<BlogDocument>,
+    private configService: ConfigService,
+    private uploadsService: UploadsService,
+  ) {}
 
   async create(createBlogDto: CreateBlogDto, user :IUser) {
     try {
@@ -86,7 +93,9 @@ export class BlogsService {
     try {
       const blog = await this.blogModel.findById(id);
       if(!blog) throw new BadRequestException('Blog not found');
-      const response = await this.blogModel.updateOne({_id: id}, {deletedBy: {email:user.email, _id: user._id}});
+      // Delete image in AWS
+      await this.uploadsService.deleteSingleFile(blog.images);
+      const response = await this.blogModel.updateOne({_id: id}, {deletedBy: {email:user.email, _id: user._id}, images:""}, );
       return this.blogModel.softDelete({_id: id});
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -110,6 +119,19 @@ export class BlogsService {
         const response = await this.blogModel.updateOne({_id: id}, {likes: listLike});
       }
       return index == -1 ? 'Like' : 'Unlike';
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async updateImage(url:string, id: string, user :IUser) {
+    try {
+      const blog = await this.blogModel.findById(id);
+      if(!blog) throw new BadRequestException('Blog not found');
+      const response = await this.blogModel.updateOne({_id: id}, {images: url, updatedBy: {email:user.email, _id: user._id}});
+      return {
+        images: url,
+      }
     } catch (error) {
       throw new BadRequestException(error.message);
     }

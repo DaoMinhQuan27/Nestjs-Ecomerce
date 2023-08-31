@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { TransformationInterceptor } from './core/transform.interceptor';
 import cookieParser from 'cookie-parser';
+import { config } from 'aws-sdk';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -29,6 +30,13 @@ async function bootstrap() {
 
   // config cors
   app.enableCors();
+
+  // Config aws s3
+  config.update({
+    accessKeyId: configService.get('AWS_ACCESS_KEY_ID'),
+    secretAccessKey: configService.get('AWS_ACCESS_SECRET_KEY'),
+    region: configService.get('AWS_S3_REGION'),
+  });
   
   await app.listen(configService.get<string>('PORT'));
 }

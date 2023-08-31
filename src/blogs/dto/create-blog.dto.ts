@@ -1,6 +1,6 @@
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, } from 'class-validator';
+import { IsNotEmpty, IsOptional, } from 'class-validator';
 import mongoose from 'mongoose';
 
 export class CreateBlogDto {
@@ -13,6 +13,7 @@ export class CreateBlogDto {
     description: string;
 
     @ApiProperty({required:false})
+    @IsOptional()
     view: string;
 
     @IsNotEmpty()
@@ -20,12 +21,15 @@ export class CreateBlogDto {
     category: mongoose.Schema.Types.ObjectId;
 
     @ApiProperty({required:false})
+    @IsOptional()
     author: mongoose.Schema.Types.ObjectId;
 
     @ApiProperty({required:false})
+    @IsOptional()
     likes: mongoose.Schema.Types.ObjectId[];
 
     @ApiProperty({required:false})
+    @IsOptional()
     images: string;
 }
 
