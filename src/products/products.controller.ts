@@ -3,12 +3,14 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { IUser } from 'src/auth/user.interface';
-import { Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
+import { ApiMultiFile, Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
 import { IRating } from './ratings.interface';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { Throttle } from '@nestjs/throttler';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService,
@@ -21,7 +23,9 @@ export class ProductsController {
     return this.productsService.create(createProductDto , user);
   }
 
+  @Public()
   @Post('ratings')
+  @ApiBody({schema: {example: {id : 'productId', rating: 5, comment: 'Good'}}})
   @ResponseMessage('Ratings a product')
   createRating(@Body() body : IRating, @User() user : IUser) {
     return this.productsService.createRating(body, user);
@@ -54,6 +58,8 @@ export class ProductsController {
   }
 
   @Post('upload/:id')
+  @ApiConsumes('multipart/form-data')
+  @ApiMultiFile('images')
   @Throttle(3, 60)
   @UseInterceptors(FilesInterceptor('images'))
   @ResponseMessage('Upload images')
@@ -86,6 +92,7 @@ export class ProductsController {
 
 
   @Delete('upload/:id')
+  @ApiBody({schema: {example: {images : ['link image 1 to delete', 'image2']}}})
   @Throttle(3, 60)
   @ResponseMessage('Delete images')
   async deleteFile(@Param('id') id: string, @User() user: IUser, @Body() body: any) {

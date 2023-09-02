@@ -4,8 +4,9 @@ import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { IUser } from 'src/auth/user.interface';
 import { Public, ResponseMessage, Roles, User } from 'src/decorator/customzie.decorator';
-import { Role } from 'src/roles/schemas/role.schema';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('product-categorys')
 @Controller('product-categorys')
 export class ProductCategorysController {
   constructor(private readonly productCategorysService: ProductCategorysService) {}
@@ -43,5 +44,13 @@ export class ProductCategorysController {
   @ResponseMessage('Delete a product category')
   remove(@Param('id') id: string, @User() user : IUser) {
     return this.productCategorysService.remove(id,user);
+  }
+
+  @Delete('brand/:id')
+  @ApiBody({schema: {example: {brand : 'brandName'}}})
+  @Roles(['admin'])
+  @ResponseMessage('Delete a brand of category')
+  removeBrand(@Param('id') id: string, @User() user : IUser, @Body('brand') brand: string) {
+    return this.productCategorysService.removeBrand(id,user,brand);
   }
 }

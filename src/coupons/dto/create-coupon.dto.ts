@@ -15,7 +15,7 @@ export class CreateCouponDto {
     discount: number;
 
     @IsNotEmpty()
-    @ApiProperty()
+    @ApiProperty({example: '2' , description: '2 days'})
     expiredDate: string;
 
 }

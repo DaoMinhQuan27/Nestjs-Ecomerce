@@ -12,6 +12,7 @@ const bcrypt = require('bcryptjs');
 import { ICart } from './cart.interface';
 import { ProductsService } from 'src/products/products.service';
 import e from 'express';
+import { CartDto } from './dto/cart.dto';
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: SoftDeleteModel<UserDocument>,
@@ -134,7 +135,7 @@ export class UsersService {
     }
   }
 
-  async updateCart(id: string, body : UpdateUserDto, user :IUser) {
+  async updateCart(id: string, body : CartDto, user :IUser) {
     try {
       if(!body.cart) throw new BadRequestException('Require cart');
       if(!mongoose.Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid id');
@@ -161,7 +162,7 @@ export class UsersService {
     }
   }
 
-  async deleteCart(id: string, body : UpdateUserDto, user :IUser) {
+  async deleteCart(id: string, body : CartDto, user :IUser) {
     try {
       if(!body.cart) throw new BadRequestException('Require cart');
       if(!mongoose.Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid id');

@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, UserCreateDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { IUser } from 'src/auth/user.interface';
 import { SoftDeleteModel } from 'soft-delete-plugin-mongoose';
@@ -19,7 +19,7 @@ export class OrdersService {
     private couponsService: CouponsService,
     private productsService: ProductsService,
   ) {}
-  async create(createOrderDto: CreateOrderDto, user: IUser) {
+  async create(createOrderDto: UserCreateDto, user: IUser) {
     try {
       const findUser = await this.usersService.findOne(user._id);
       if(!findUser.address) throw new BadRequestException('Please add address');
@@ -32,7 +32,7 @@ export class OrdersService {
         quantity: number,
         color: string,
       }[]
-      const products = cart.map(item => ({
+      let products = cart.map(item => ({
         product: item.product._id,
         count: item.quantity,
         color: item.color,
@@ -43,6 +43,7 @@ export class OrdersService {
       if(createOrderDto.coupon){
         const coupon = await this.couponsService.findOne(createOrderDto.coupon.toString());
         if(!coupon) throw new BadRequestException('Coupon not found');
+        if(coupon.expiredDate < new Date()) throw new BadRequestException('Coupon expired');
         discount = coupon.discount;
       }
       // Tính tổng tiền
@@ -60,6 +61,45 @@ export class OrdersService {
 
       return order;
 
+
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async createByAdmin(createOrderDto: CreateOrderDto, admin: IUser, userId: string) {
+    try {
+      const findUser = await this.usersService.findOne(userId);
+      if(!findUser.address) throw new BadRequestException('Please add address');
+      let products = createOrderDto.products
+      let data = [];
+      for(let i = 0; i < products.length; i++){
+        const response = await this.productsService.findOne(products[i].product.toString());
+        data.push({product: {price:response.price, _id:response._id, title:response.title}, count: products[i].count, color: products[i].color})
+      }
+
+      // Check coupon
+      let discount = 0;
+      if(createOrderDto.coupon){
+        const coupon = await this.couponsService.findOne(createOrderDto.coupon.toString());
+        console.log(new Date());
+        if(coupon.expiredDate < new Date()) throw new BadRequestException('Coupon expired');
+        discount = coupon.discount;
+      }
+      // Tính tổng tiền
+
+      const total = data.reduce((acc, item) => { return acc + item.count * item.product.price}, 0);
+      const totalAfterDiscount = (total - total * discount / 100).toFixed(1);
+
+      const order = await this.orderModel.create({...createOrderDto,
+        orderBy:userId,
+        address:findUser.address,
+        products,
+        total : totalAfterDiscount,
+        createdBy: {email:admin.email, _id: admin._id},
+      })
+
+      return order;
 
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -164,6 +204,7 @@ export class OrdersService {
         console.log(1);
         let coupon = await this.couponsService.findOne(updateOrderDto.coupon.toString());
         if(!coupon) throw new BadRequestException('Coupon not found');
+        if(coupon.expiredDate < new Date()) throw new BadRequestException('Coupon expired');
         discount = coupon.discount;
       } else {
         const oldDiscount = await this.couponsService.findOne(order.coupon.toString());

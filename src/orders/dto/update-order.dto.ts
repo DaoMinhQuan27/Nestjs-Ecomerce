@@ -8,7 +8,7 @@ enum OrderStatus {
 }
 export class UpdateOrderDto extends PartialType(CreateOrderDto) {
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({required:false})
     @IsEnum(OrderStatus)
     status: string;
 }

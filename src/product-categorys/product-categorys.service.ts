@@ -61,11 +61,12 @@ export class ProductCategorysService {
     }
   }
 
-  async update(id: string, updateProductCategoryDto: UpdateProductCategoryDto, user :IUser) {
+  async update(id: string, update: UpdateProductCategoryDto, user :IUser) {
     try {
       const category = await this.productCategoryModel.findById(id);
       if(!category) throw new BadRequestException('Category not found');
-      const response = await this.productCategoryModel.updateOne({_id: id}, {...updateProductCategoryDto, updatedBy: {email:user.email, _id: user._id}});
+      let brand = update.brand ?  new Set([...category.brand, ...update.brand]) : category.brand;
+      const response = await this.productCategoryModel.updateOne({_id: id}, {...update, brand:[...brand], updatedBy: {email:user.email, _id: user._id}});
       return response;
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -78,6 +79,25 @@ export class ProductCategorysService {
       if(!category) throw new BadRequestException('Category not found');
       const response = await this.productCategoryModel.updateOne({_id: id}, {deletedBy: {email:user.email, _id: user._id}});
       return this.productCategoryModel.softDelete({_id: id});
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async removeBrand(id: string, user :IUser, brandDetele: string) {
+    try {
+      if(!brandDetele) throw new BadRequestException('Brand not found');
+      const category = await this.productCategoryModel.findById(id);
+      if(!category) throw new BadRequestException('Category not found');
+      let brand = category.brand;
+      const findBrand = category.brand.indexOf(brandDetele)
+      if(findBrand == -1) throw new BadRequestException('Brand not found in category');
+      brand.splice(findBrand, 1);
+      let response = await this.productCategoryModel.updateOne({_id: id}, {brand:[...brand], updatedBy: {email:user.email, _id: user._id}});
+      return {
+        brand: brand,
+      }
+      
     } catch (error) {
       throw new BadRequestException(error.message);
     }

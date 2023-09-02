@@ -4,7 +4,9 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { ResponseMessage, User } from 'src/decorator/customzie.decorator';
 import { IUser } from 'src/auth/user.interface';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('coupons')
 @Controller('coupons')
 export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}

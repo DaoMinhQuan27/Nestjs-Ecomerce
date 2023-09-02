@@ -1,19 +1,28 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, UserCreateDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { ResponseMessage, Roles, User } from 'src/decorator/customzie.decorator';
 import { IUser } from 'src/auth/user.interface';
 import { query } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @ResponseMessage("Create user order")
-  create(@Body() createOrderDto: CreateOrderDto, @User() user: IUser) {
+  @ResponseMessage("Create user order by user")
+  create(@Body() createOrderDto: UserCreateDto, @User() user: IUser) {
     return this.ordersService.create(createOrderDto, user);
+  }
+
+  @Post('by-admin/:userId')
+  @Roles(['admin'])
+  @ResponseMessage("Create order for user by admin")
+  createByAdmin(@Body() createOrderDto: CreateOrderDto, @User() admin: IUser, @Param('userId') userId: string) {
+    return this.ordersService.createByAdmin(createOrderDto, admin, userId);
   }
 
   @Get()

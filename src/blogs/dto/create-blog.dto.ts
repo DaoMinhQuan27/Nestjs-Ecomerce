@@ -17,10 +17,10 @@ export class CreateBlogDto {
     view: string;
 
     @IsNotEmpty()
-    @ApiProperty()
+    @ApiProperty({example: '60f1b0b9e1b9f1b0b9e1b9f1'})
     category: mongoose.Schema.Types.ObjectId;
 
-    @ApiProperty({required:false})
+    @ApiProperty({required:false, example: '60f1b0b9e1b9f1b0b9e1b9f1'})
     @IsOptional()
     author: mongoose.Schema.Types.ObjectId;
 
@@ -30,7 +30,7 @@ export class CreateBlogDto {
 
     @ApiProperty({required:false})
     @IsOptional()
-    images: string;
+    image: string;
 }
 
 

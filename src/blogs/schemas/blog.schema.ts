@@ -25,7 +25,7 @@ export class Blog {
   likes: mongoose.Schema.Types.ObjectId[];
 
   @Prop()
-  images: string;
+  image: string;
 
   @Prop()
   createdAt: Date;

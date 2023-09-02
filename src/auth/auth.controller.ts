@@ -1,14 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res, Req, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterUserDto } from 'src/users/dto/create-user.dto';
+import { LoginUserDto, RegisterUserDto } from 'src/users/dto/create-user.dto';
 import { Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
 import { LocalAuthGuard } from './local-auth.guard';
 import { IUser } from './user.interface';
 import { Request, Response } from 'express';
 import { GoogleOAuthGuard } from './google-oauth.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {  VerifyEmail, VerifyPassword } from './dto/auth';
 
-
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -22,6 +24,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(LocalAuthGuard)
+  @ApiBody({ type: LoginUserDto })
   @Post('login')
   @ResponseMessage('User login')
   async login(@User() user: IUser, @Res({ passthrough: true }) res: Response) {
@@ -57,6 +60,7 @@ export class AuthController {
 
   @Public()
   @Post('forget-password')
+  @ApiBody({ type: VerifyEmail })
   @ResponseMessage('Send mail to reset password')
   async forget(@Body() body: any) {
     return this.authService.forget(body.email);
@@ -64,6 +68,7 @@ export class AuthController {
 
   @Public()
   @Post('reset-password/:token')
+  @ApiBody({ type: VerifyPassword })
   @ResponseMessage('Reset password')
   async resetPass(@Body() body: any, @Param('token') token: string) {
     return this.authService.resetPass(body.password,token);

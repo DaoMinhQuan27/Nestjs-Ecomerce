@@ -94,7 +94,7 @@ export class BlogsService {
       const blog = await this.blogModel.findById(id);
       if(!blog) throw new BadRequestException('Blog not found');
       // Delete image in AWS
-      await this.uploadsService.deleteSingleFile(blog.images);
+      await this.uploadsService.deleteSingleFile(blog.image);
       const response = await this.blogModel.updateOne({_id: id}, {deletedBy: {email:user.email, _id: user._id}, images:""}, );
       return this.blogModel.softDelete({_id: id});
     } catch (error) {

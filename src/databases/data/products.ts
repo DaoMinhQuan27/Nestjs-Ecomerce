@@ -1,4 +1,4 @@
-[
+export const dataProduct = [
     {
         "category": [
             "Home",

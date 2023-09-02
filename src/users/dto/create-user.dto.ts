@@ -9,8 +9,6 @@ export class CreateUserDto {
     @ApiProperty()
     email: string;
 
-    
-
     @IsNotEmpty()
     @ApiProperty()
     password: string;
@@ -22,10 +20,6 @@ export class CreateUserDto {
     @ApiProperty()
     @IsOptional()
     address: string;
-
-    @ApiProperty()
-    @IsOptional()
-    wishlist: mongoose.Schema.Types.ObjectId;
 
     @ApiProperty({required:false})
     @IsOptional()
@@ -51,13 +45,13 @@ export class CreateUserDto {
     @IsOptional()
     age: number;
 
-    @ApiProperty({required:false})
+    @ApiProperty({required:false, type: [mongoose.Schema.Types.ObjectId], example: ['60f1b0b9e1b9f1b0b9e1b9f1']})
     @IsOptional()
     wishList: mongoose.Schema.Types.ObjectId[];
 
     @IsNotEmpty()
     @IsMongoId()
-    @ApiProperty()
+    @ApiProperty({example: '60f1b0b9e1b9f1b0b9e1b9f1', description: 'role id'})
     role: mongoose.Schema.Types.ObjectId;
 }
 

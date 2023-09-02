@@ -2,13 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query, UseInter
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
-import { Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
+import { ApiFile, Public, ResponseMessage, User } from 'src/decorator/customzie.decorator';
 import { IUser } from 'src/auth/user.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadsService } from 'src/uploads/uploads.service';
 import { Throttle } from '@nestjs/throttler';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
-
+@ApiTags('blogs')
 @Controller('blogs')
 export class BlogsController {
   constructor(private readonly blogsService: BlogsService,
@@ -22,9 +23,11 @@ export class BlogsController {
   }
 
   @Post('upload/:id')
+  @ApiConsumes('multipart/form-data')
+  @ApiFile('image')
   @Throttle(3, 60)
   @ResponseMessage('Upload image for blog')
-  @UseInterceptors(FileInterceptor('images'))
+  @UseInterceptors(FileInterceptor('image'))
   async uploadFile(@UploadedFile(
     new ParseFilePipe({
       validators: [
@@ -43,9 +46,11 @@ export class BlogsController {
   }
 
   @Patch('upload/:id')
+  @ApiConsumes('multipart/form-data')
+  @ApiFile('image')
   @Throttle(3, 60)
   @ResponseMessage('Update image for blog')
-  @UseInterceptors(FileInterceptor('images'))
+  @UseInterceptors(FileInterceptor('image'))
   async updateFile(@UploadedFile(
     new ParseFilePipe({
       validators: [
@@ -58,8 +63,8 @@ export class BlogsController {
     if(!file) throw new BadRequestException('Require images');
     // Delete old image
     const blog = await this.blogsService.findOne(id);
-    if(blog.images) {
-      await this.uploadsService.deleteSingleFile(blog.images);
+    if(blog.image) {
+      await this.uploadsService.deleteSingleFile(blog.image);
     }
 
     // Upload new image
@@ -72,6 +77,7 @@ export class BlogsController {
   }
 
   @Delete('upload/:id')
+  @ApiBody({schema: {example: {fileName: "link image"}}})
   @Throttle(3, 60)
   @ResponseMessage('Delete image for blog')
   async deleteFile( @Param('id') id: string, @Body() body: any, @User() user: IUser) {

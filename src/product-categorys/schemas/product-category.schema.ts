@@ -10,6 +10,9 @@ export class ProductCategory {
   name: string;
 
   @Prop()
+  brand: string[];
+
+  @Prop()
   description: string;
 
   @Prop()

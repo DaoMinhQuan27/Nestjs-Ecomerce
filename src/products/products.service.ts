@@ -79,7 +79,23 @@ export class ProductsService {
         const slug = slugify(updateProductDto.title)
         updateProductDto.slug = slug;
       }
-      const response = await this.productModel.updateOne({_id: id}, {...updateProductDto, updatedBy: {email:user.email, _id: user._id}});
+      let description = updateProductDto.description ?  new Set([...product.description, ...updateProductDto.description]) : product.description;
+      let colors = updateProductDto.colors ?  new Set([...product.colors, ...updateProductDto.colors]) : product.colors;
+      let informations = product.informations 
+      // Update informations
+      if(updateProductDto.informations) {
+        for(let key in updateProductDto.informations) {
+          if(informations.hasOwnProperty(key)) {
+            informations[key] = updateProductDto.informations[key];
+          }
+        }
+      }
+      const response = await this.productModel.updateOne({_id: id}, {
+        ...updateProductDto, 
+        description:[...description],
+        colors:[...colors],
+        informations,
+        updatedBy: {email:user.email, _id: user._id}});
       return response;
     } catch (error) {
       throw new BadRequestException(error.message);

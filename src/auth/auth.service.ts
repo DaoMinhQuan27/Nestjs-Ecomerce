@@ -293,4 +293,14 @@ export class AuthService {
       throw new BadRequestException(error.message);
     }
   }
+
+  async checkActiveRole(role: string) {
+    try {
+      const roleExist = await this.rolesService.findByRoleName(role, role);
+      if(!roleExist.isActive) return false;
+      return true;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 }

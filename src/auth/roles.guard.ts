@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext , ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from 'src/decorator/customzie.decorator';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -8,7 +9,7 @@ export class RolesGuard implements CanActivate {
     
   }
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext) {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),

@@ -14,7 +14,7 @@ export class Product {
   slug: string;
 
   @Prop()
-  description: string;
+  description: string[];
 
   @Prop()
   brand: string;
@@ -34,10 +34,16 @@ export class Product {
   @Prop()
   images: string[];
 
-  @Prop({
-    enum : ['red', 'green', 'blue', 'black', 'white', 'yellow', 'pink', 'orange', 'purple', 'brown', 'gray', 'gold', 'silver']
-  })
-  colors: string;
+  @Prop({default: []})
+  colors: string[];
+
+  @Prop({type:Object})
+  informations : {
+    DESCRIPTION:string,
+    WARRANTY:string,
+    DELIVERY:string,
+    PAYMENT:string,
+  }
 
   @Prop({
     type:[{star:{type:Number}, postedBy:{type:mongoose.Schema.Types.ObjectId , ref : "User"}, comment:{type:String}}],

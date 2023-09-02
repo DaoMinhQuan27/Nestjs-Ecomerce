@@ -1,4 +1,4 @@
-const data = [
+export const data = [
     {
         cate: 'Smartphone',
         brand: ['Apple', 'Samsung', 'LG', 'Asus', 'Nokia', 'BlackBerry'],
@@ -40,5 +40,3 @@ const data = [
         image: 'https://cdn.shopify.com/s/files/1/1903/4853/files/printer_300x.jpg?v=1613166810'
     },
 ]
-
-module.exports = data

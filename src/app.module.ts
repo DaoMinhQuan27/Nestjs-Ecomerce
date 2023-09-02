@@ -19,6 +19,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { OrdersModule } from './orders/orders.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { DatabasesModule } from './databases/databases.module';
 
 @Module({
   imports: [
@@ -68,7 +69,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     BlogsModule,
     CouponsModule,
     UploadsModule,
-    OrdersModule
+    OrdersModule,
+    DatabasesModule
   ],
   controllers: [AppController],
   providers: [AppService , 

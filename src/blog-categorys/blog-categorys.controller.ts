@@ -4,7 +4,9 @@ import { CreateBlogCategoryDto } from './dto/create-blog-category.dto';
 import { UpdateBlogCategoryDto } from './dto/update-blog-category.dto';
 import { IUser } from 'src/auth/user.interface';
 import { Public, ResponseMessage, Roles, User } from 'src/decorator/customzie.decorator';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('blog-categorys')
 @Controller('blog-categorys')
 export class BlogCategorysController {
   constructor(private readonly blogCategorysService: BlogCategorysService) {}

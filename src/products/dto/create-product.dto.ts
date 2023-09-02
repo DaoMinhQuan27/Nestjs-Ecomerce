@@ -16,22 +16,23 @@ export class CreateProductDto {
 
     @IsNotEmpty()
     @ApiProperty()
-    description: string;
+    @IsArray()
+    description: string[];
 
     @IsNotEmpty()
     @ApiProperty()
     brand: string;
 
-    @ApiProperty()
+    @ApiProperty({example: '60f1b0b9e1b9f1b0b9e1b9f1'})
     @IsNotEmpty()
     category: mongoose.Schema.Types.ObjectId;
 
     @IsNotEmpty()
-    @ApiProperty({required:false})
+    @ApiProperty()
     price: number;
 
     @IsNotEmpty()
-    @ApiProperty({required:false})
+    @ApiProperty()
     quantity: number;
     
     @ApiProperty({required:false})
@@ -40,19 +41,25 @@ export class CreateProductDto {
 
     @ApiProperty({required:false})
     @IsOptional()
-    colors: string;
+    colors: string[];
+
+    @ApiProperty({required:false, example : {
+        DESCRIPTION:'string',
+        WARRANTY:'string',
+        DELIVERY:'string',
+        PAYMENT:'string',
+    }})
+    @IsOptional()
+    informations: {
+        DESCRIPTION:string,
+        WARRANTY:string,
+        DELIVERY:string,
+        PAYMENT:string,
+    };
 
     @ApiProperty({required:false})
     @IsOptional()
     images: string[];
 
-    @ApiProperty({required:false})
-    @IsOptional()
-    ratings: {star:number, postedBy:mongoose.Schema.Types.ObjectId, comment:string}[];
-
-
-    @ApiProperty({required:false})
-    @IsOptional()
-    totalRatings: number;
 }
 

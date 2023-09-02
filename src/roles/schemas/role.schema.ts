@@ -11,7 +11,7 @@ export class Role {
 	@Prop()
   description: string;
 
-  @Prop()
+  @Prop({default: true})
   isActive: boolean;
 
   @Prop()
