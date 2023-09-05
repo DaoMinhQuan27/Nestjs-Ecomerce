@@ -46,7 +46,7 @@ export class ProductsService {
     let result = await this.productModel.find(filter).limit(limit1).skip(offset)
       // @ts-ignore:Unreachable code error
       .sort(sort).select(projection).populate(population).populate(
-        [{path: 'ratings.postedBy', select: 'name email'}, 
+        [{path: 'ratings.postedBy', select: 'name email image'}, 
         {path: 'category', select: 'name'}
       ])
       ;
@@ -63,7 +63,10 @@ export class ProductsService {
 
   async findOne(id: string) {
     try {
-      const product = await this.productModel.findById(id).populate({path: 'category', select: 'name'});
+      const product = await this.productModel.findById(id).populate(
+        [{path: 'ratings.postedBy', select: 'name email image'}, 
+        {path: 'category', select: 'name'}
+      ])
       if(!product || product.isDeleted == true) throw new BadRequestException('Product not found')
       return product;
     } catch (error) {
@@ -119,11 +122,12 @@ export class ProductsService {
       const rating = {
         postedBy: user._id as unknown as ObjectId,
         star,
-        comment
+        comment,
+        updatedAt: new Date()
       }
       // validate
       if(!id || !star || !comment) throw new BadRequestException('Missing field');
-      const product = await this.productModel.findById(id);
+      let product = await this.productModel.findById(id);
       if(!product) throw new BadRequestException('Invalid id or product not found');
 
       
@@ -143,6 +147,7 @@ export class ProductsService {
           ratings: oldRating
         })
       }
+      product = await this.productModel.findById(id);
 
       // update totalRatings
       const totalRatings = product.ratings.length;
@@ -153,6 +158,38 @@ export class ProductsService {
       })
       
       return checkRating == -1 ? 'Crate rating success' : 'Update rating success';
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async removeRating(id: string, user :IUser) {
+    try {
+      const product = await this.productModel.findById(id);
+      if(!product) throw new BadRequestException('Product not found');
+
+      const ratings = product.ratings;
+      const checkRating = ratings.findIndex(item => item.postedBy.toString() === user._id);
+      if(checkRating == -1) throw new BadRequestException('User not rating this product');
+      ratings.splice(checkRating, 1);
+      const response = await this.productModel.updateOne({_id: id},{ ratings, updatedBy: {email:user.email, _id: user._id}});
+      return 'Delete rating by user success';
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async removeRatingByAdmin(id: string, admin :IUser, userId: string) {
+    try {
+      const product = await this.productModel.findById(id);
+      if(!product) throw new BadRequestException('Product not found');
+
+      const ratings = product.ratings;
+      const checkRating = ratings.findIndex(item => item.postedBy.toString() === userId);
+      if(checkRating == -1) throw new BadRequestException('User not rating this product');
+      ratings.splice(checkRating, 1);
+      const response = await this.productModel.updateOne({_id: id},{ ratings, updatedBy: {email:admin.email, _id: admin._id}});
+      return 'Delete rating by admin success';
     } catch (error) {
       throw new BadRequestException(error.message);
     }

@@ -46,10 +46,10 @@ export class Product {
   }
 
   @Prop({
-    type:[{star:{type:Number}, postedBy:{type:mongoose.Schema.Types.ObjectId , ref : "User"}, comment:{type:String}}],
+    type:[{star:{type:Number}, postedBy:{type:mongoose.Schema.Types.ObjectId , ref : "User"}, comment:{type:String}, updatedAt:{type:Date}}],
     default: []
   })
-  ratings: {star:number, postedBy:mongoose.Schema.Types.ObjectId, comment:string}[];
+  ratings: {star:number, postedBy:mongoose.Schema.Types.ObjectId, comment:string, updatedAt:Date}[];
 
 
   @Prop({default: 0})
